@@ -124,6 +124,10 @@ parser:option "--fps"
     :description "Force sanjuuni to use a specified frame rate"
     :target "force_fps"
 
+parser:option "-m" "--monitor"
+        :description "Redirects video output to an external monitor"
+        :target "monitor"
+
 -- stylua: ignore end
 
 local args = parser:parse({ ... })
@@ -368,8 +372,18 @@ local function play(url)
     restart = false
     print("Requesting media ...")
 
+    local monitor = nil
+
+    if args.monitor then
+        monitor = peripheral.wrap(args.monitor)
+    end
+
+    if not monitor then
+        monitor = term
+    end
+
     if not args.no_video then
-        youcubeapi:request_media(url, term.getSize())
+        youcubeapi:request_media(url, monitor.getSize())
     else
         youcubeapi:request_media(url)
     end
@@ -414,7 +428,7 @@ local function play(url)
     end
 
     local video_buffer = libs.youcubeapi.Buffer.new(
-        libs.youcubeapi.VideoFiller.new(youcubeapi, data.id, term.getSize()),
+        libs.youcubeapi.VideoFiller.new(youcubeapi, data.id, monitor.getSize()),
         60 -- Most videos run on 30 fps, so we store 2s of video.
     )
 
@@ -467,8 +481,14 @@ local function play(url)
                 string_unpack = libs.string_pack.unpack
             end
 
+            local monitor = nil
+
+            if args.monitor then
+                monitor = peripheral.wrap(args.monitor)
+            end
+
             os.queueEvent("youcube:vid_playing", data)
-            libs.youcubeapi.play_vid(video_buffer, args.force_fps, string_unpack)
+            libs.youcubeapi.play_vid(video_buffer, args.force_fps, string_unpack, monitor)
             os.queueEvent("youcube:vid_eof", data)
         end
     end

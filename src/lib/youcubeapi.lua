@@ -495,7 +495,10 @@ for i = 0, 15 do
     currnt_palette[i] = { r, g, b }
 end
 
-local function reset_term()
+local function reset_term(monitor)
+    if monitor then
+        term = monitor
+    end
     for i = 0, 15 do
         term.setPaletteColor(2 ^ i, currnt_palette[i][1], currnt_palette[i][2], currnt_palette[i][3])
     end
@@ -511,9 +514,12 @@ end
     and [sanjuuni/websocket-player.lua](https://github.com/MCJack123/sanjuuni/blob/30dcabb4b56f1eb32c88e1bce384b0898367ebda/websocket-player.lua)
     @tparam Buffer buffer filled with frames
 ]]
-local function play_vid(buffer, force_fps, string_unpack)
+local function play_vid(buffer, force_fps, string_unpack, monitor)
     if not string_unpack then
         string_unpack = string.unpack
+    end
+    if monitor then
+        term = monitor
     end
     local Fwidth, Fheight = term.getSize()
     local tracker = 0
@@ -590,6 +596,7 @@ local function play_vid(buffer, force_fps, string_unpack)
                     c, n, pos = string_unpack("BB", data, pos)
                 end
             end
+
             term.setCursorPos(1, y)
             term.blit(text[y], fg, bg)
         end
@@ -608,14 +615,14 @@ local function play_vid(buffer, force_fps, string_unpack)
             end
         end
     end
-    reset_term()
+    reset_term(monitor)
 end
 
 return {
     --- "Metadata" - [YouCube API](https://commandcracker.github.io/YouCube/) Version
     _API_VERSION = "0.0.0-poc.1.0.0",
     --- "Metadata" - Library Version
-    _VERSION = "0.0.0-poc.1.4.2",
+    _VERSION = "0.0.0-poc.1.4.1c",
     --- "Metadata" - Description
     _DESCRIPTION = "Library for accessing YouCub's API",
     --- "Metadata" - Homepage / Url
